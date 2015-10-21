@@ -26,6 +26,9 @@ namespace GK3D
         VertexPositionColor[] triangleVertices;
         VertexBuffer vertexBuffer;
 
+        //Landscape Coordinates
+        int width = 3, lenght = 2;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -43,7 +46,6 @@ namespace GK3D
             // TODO: Add your initialization logic here
 
             base.Initialize();
-            int width = 2, lenght = 2;
             camTarget = new Vector3(0f, 0f, 0f);
             camPosition = new Vector3(0f, 0f, -100f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -65,17 +67,27 @@ namespace GK3D
 
             //Geometry  - a simple triangle about the origin
             triangleVertices = new VertexPositionColor[6*width*lenght];
+            Vector3[,] landscapeCoordinates = new Vector3[width +1,lenght +1];
 
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < width+1; i++)
+            {
+                for (int j = 0; j < lenght+1; j++)
+                {
+                    landscapeCoordinates[i,j] = new Vector3(i * 10, 0, j * 10);
+                }
+            }
+
+
+                    for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < lenght; j++)
                 {
-                    triangleVertices[6 * j + i + 0] = new VertexPositionColor(new Vector3(i * 10, 0, j * 10), Color.Green);
-                    triangleVertices[6 * j + i + 1] = new VertexPositionColor(new Vector3(i * 10 + 0, 0, j * 10 + 10), Color.Red);
-                    triangleVertices[6 * j + i + 2] = new VertexPositionColor(new Vector3(i * 10 + 10, 0, j * 10 + 0), Color.Blue);
-                    triangleVertices[6 * j + i + 3] = new VertexPositionColor(new Vector3(i * 10 + 10, 0, j * 10 + 10), Color.Blue);
-                    triangleVertices[6 * j + i + 4] = new VertexPositionColor(new Vector3(i * 10 + 0, 0, j * 10 + 10), Color.Violet);
-                    triangleVertices[6 * j + i + 5] = new VertexPositionColor(new Vector3(i * 10 + 10, 0, j * 10 + 0), Color.Yellow);
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColor(landscapeCoordinates[i, j], Color.Green);
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColor(landscapeCoordinates[i, j + 1], Color.Red);
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColor(landscapeCoordinates[i + 1, j], Color.Blue);
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColor(landscapeCoordinates[i + 1, j + 1], Color.Blue);
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColor(landscapeCoordinates[i, j + 1], Color.Violet);
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColor(landscapeCoordinates[i + 1, j], Color.Yellow);
                 }
             }
 
@@ -177,7 +189,7 @@ namespace GK3D
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, 3);
+                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght *2);
             }
             // TODO: Add your drawing code here
 
