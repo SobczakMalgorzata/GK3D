@@ -23,11 +23,25 @@ namespace GK3D
         BasicEffect basicEffect;
 
         //Geometric info
-        VertexPositionColor[] triangleVertices;
+        VertexPositionColorNormal[] triangleVertices;
         VertexBuffer vertexBuffer;
 
         //Landscape Coordinates
-        int width = 3, lenght = 2;
+        int width = 30, lenght = 30;
+
+        // Set the 3D model to draw.
+        Model myBenchModel;
+        Model myLaternModel;
+
+        // The aspect ratio determines how to scale 3d to 2d projection.
+        float aspectRatio;
+        Vector3 bench1Position = new Vector3(10, 0, 30);
+        Vector3 latern1Position = new Vector3(10, 0, 70);
+        float bench1Rotation = 0.0f;
+        float latern1Rotation = 0.0f;
+        float bench2Rotation = 90.0f;
+        float benchScaleRatio = 0.05f;
+        float laternScaleRatio = 0.07f;
 
         public Game1()
         {
@@ -48,14 +62,11 @@ namespace GK3D
             base.Initialize();
             camTarget = new Vector3(0f, 0f, 0f);
             camPosition = new Vector3(0f, 0f, -100f);
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                               MathHelper.ToRadians(45f),
-                               GraphicsDevice.DisplayMode.AspectRatio,
-                1f, 1000f);
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         new Vector3(0f, 1f, 0f));// Y up
-            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
-                          Forward, Vector3.Up);
+                new Vector3(0f, 1f, 0f));// Y up
+            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.Forward, Vector3.Up);
 
             //BasicEffect
             basicEffect = new BasicEffect(GraphicsDevice);
@@ -63,17 +74,35 @@ namespace GK3D
 
             basicEffect.VertexColorEnabled = true;
 
-            basicEffect.LightingEnabled = false;
+            basicEffect.LightingEnabled = true;
+            //basicEffect.EnableDefaultLighting();
 
+            basicEffect.AmbientLightColor = new Vector3(0.1f,0.1f,0f);
+            basicEffect.DiffuseColor = new Vector3(0.5f,0.5f,0.5f);
+
+            basicEffect.DirectionalLight0.Enabled = true;
+            basicEffect.DirectionalLight0.DiffuseColor = new Vector3(0.5f, 1f, 0.5f); // a red light
+            basicEffect.DirectionalLight0.Direction = new Vector3(0, -1, 0);  // coming along the _axis
+            basicEffect.DirectionalLight0.SpecularColor = new Vector3(1, 0, 0); // with green highlights
+            
             //Geometry  - a simple triangle about the origin
-            triangleVertices = new VertexPositionColor[6*width*lenght];
-            Vector3[,] landscapeCoordinates = new Vector3[width +1,lenght +1];
+            triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
+            Vector3[,] landscapeCoordinates = new Vector3[width + 1, lenght + 1];
 
-            for (int i = 0; i < width+1; i++)
+            for (int i = 0; i < width + 1; i++)
             {
-                for (int j = 0; j < lenght+1; j++)
+                for (int j = 0; j < lenght + 1; j++)
                 {
-                    landscapeCoordinates[i,j] = new Vector3(i * 10, 0, j * 10);
+                    if (i < 7 && i > 4 && j < 20 && j > 10)
+                        landscapeCoordinates[i, j] = new Vector3(i * 10, 10, j * 10);
+                    else if (j < 7 && j > 4 && i < 20 && i > 10)
+                        landscapeCoordinates[i, j] = new Vector3(i * 10, -5, j * 10);
+                    else if (i == 7 || i == 9)
+                        landscapeCoordinates[i, j] = new Vector3(i * 10, 10, j * 10);
+                    else if (i == 8)
+                        landscapeCoordinates[i, j] = new Vector3(i * 10, 20, j * 10);
+                    else
+                        landscapeCoordinates[i,j] = new Vector3(i * 10, 0, j * 10);
                 }
             }
 
@@ -82,20 +111,22 @@ namespace GK3D
             {
                 for (int j = 0; j < lenght; j++)
                 {
-                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColor(landscapeCoordinates[i, j], Color.Green);
-                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColor(landscapeCoordinates[i, j + 1], Color.Red);
-                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColor(landscapeCoordinates[i + 1, j], Color.Blue);
-                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColor(landscapeCoordinates[i + 1, j + 1], Color.Blue);
-                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColor(landscapeCoordinates[i, j + 1], Color.Violet);
-                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColor(landscapeCoordinates[i + 1, j], Color.Yellow);
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, new Vector3(0,1,0));
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Blue, new Vector3(0, 1, 0));
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Red, new Vector3(0, 1, 0));
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, new Vector3(0, 1, 0));
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, new Vector3(0, 1, 0));
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, new Vector3(0, 1, 0));
                 }
             }
 
+            
+
             //Vert buffer
             vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(
-                           VertexPositionColor), 6 * width * lenght, BufferUsage.
+                           VertexPositionColorNormal), 6 * width * lenght, BufferUsage.
                            WriteOnly);
-            vertexBuffer.SetData<VertexPositionColor>(triangleVertices);
+            vertexBuffer.SetData<VertexPositionColorNormal>(triangleVertices);
         }
 
         /// <summary>
@@ -107,6 +138,9 @@ namespace GK3D
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            myBenchModel = Content.Load<Model>("bench");
+            myLaternModel = Content.Load<Model>("latern1");
+            aspectRatio = graphics.GraphicsDevice.Viewport.AspectRatio;
             // TODO: use this.Content to load your game content here
         }
 
@@ -131,22 +165,22 @@ namespace GK3D
                 Keys.Escape))
                 Exit();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Left))
+            if (Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 camPosition.X -= 1f;
                 camTarget.X -= 1f;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            if (Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 camPosition.X += 1f;
                 camTarget.X += 1f;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
             {
                 camPosition.Y -= 1f;
                 camTarget.Y -= 1f;
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
                 camPosition.Y += 1f;
                 camTarget.Y += 1f;
@@ -158,6 +192,10 @@ namespace GK3D
             if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
             {
                 camPosition.Z -= 1f;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                
             }
 
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
@@ -189,11 +227,87 @@ namespace GK3D
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght *2);
+                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
             }
             // TODO: Add your drawing code here
 
+            Matrix[] transforms = new Matrix[myBenchModel.Bones.Count];
+            myBenchModel.CopyAbsoluteBoneTransformsTo(transforms);
+
+
+            // Draw the model. A model can have multiple meshes, so loop.
+            foreach (ModelMesh mesh in myBenchModel.Meshes)
+            {
+                // This is where the mesh orientation is set, as well 
+                // as our camera and projection.
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.EnableDefaultLighting();
+                    effect.World = transforms[mesh.ParentBone.Index] *
+                        Matrix.CreateScale(benchScaleRatio, benchScaleRatio, benchScaleRatio)
+                        * Matrix.CreateRotationY(bench1Rotation)
+                        * Matrix.CreateTranslation(bench1Position);
+                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
+                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
+                                        
+                }
+                // Draw the mesh, using the effects set above.
+                mesh.Draw();
+            }
+
+            transforms = new Matrix[myLaternModel.Bones.Count];
+            myLaternModel.CopyAbsoluteBoneTransformsTo(transforms);
+
+
+            // Draw the model. A model can have multiple meshes, so loop.
+            foreach (ModelMesh mesh in myLaternModel.Meshes)
+            {
+                // This is where the mesh orientation is set, as well 
+                // as our camera and projection.
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.EnableDefaultLighting();
+                    effect.World = transforms[mesh.ParentBone.Index] *
+                        Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
+                        * Matrix.CreateRotationY(latern1Rotation)
+                        * Matrix.CreateTranslation(latern1Position);
+                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
+                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
+                }
+                // Draw the mesh, using the effects set above.
+                mesh.Draw();
+            }
+
             base.Draw(gameTime);
+        }
+    }
+    public struct VertexPositionColorNormal : IVertexType
+    {
+        public Vector3 Position;
+        public Color Color;
+        public Vector3 Normal;
+
+        public readonly static VertexDeclaration VertexDeclaration
+            = new VertexDeclaration(
+                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                new VertexElement(sizeof(float) * 3, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+                new VertexElement(sizeof(float) * 3 + 4, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0)
+                );
+
+        public VertexPositionColorNormal(Vector3 pos, Color c, Vector3 n)
+        {
+            Position = pos;
+            Color = c;
+            Normal = n;
+        }
+
+        VertexDeclaration IVertexType.VertexDeclaration
+        {
+            get { return VertexDeclaration; }
         }
     }
 }

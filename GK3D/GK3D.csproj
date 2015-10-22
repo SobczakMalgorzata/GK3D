@@ -55,10 +55,10 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <None Include="Models\bench.fbx" />
-    <None Include="Models\latern.fbx" />
+    <None Include="Content\bench.fbx" />
+    <None Include="Content\latern.fbx" />
+    <None Include="Content\latern1.fbx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
