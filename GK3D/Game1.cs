@@ -37,8 +37,10 @@ namespace GK3D
         float aspectRatio;
         Vector3 bench1Position = new Vector3(10, 0, 30);
         Vector3 latern1Position = new Vector3(10, 0, 70);
+        Vector3 latern2Position = new Vector3(10, 0, 90);
         float bench1Rotation = 0.0f;
         float latern1Rotation = 0.0f;
+        float latern2Rotation = 0.0f;
         float bench2Rotation = 90.0f;
         float benchScaleRatio = 0.05f;
         float laternScaleRatio = 0.07f;
@@ -273,6 +275,26 @@ namespace GK3D
                         Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
                         * Matrix.CreateRotationY(latern1Rotation)
                         * Matrix.CreateTranslation(latern1Position);
+                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
+                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
+                }
+                // Draw the mesh, using the effects set above.
+                mesh.Draw();
+            }
+
+            foreach (ModelMesh mesh in myLaternModel.Meshes)
+            {
+                // This is where the mesh orientation is set, as well 
+                // as our camera and projection.
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.EnableDefaultLighting();
+                    effect.World = transforms[mesh.ParentBone.Index] *
+                        Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
+                        * Matrix.CreateRotationY(latern2Rotation)
+                        * Matrix.CreateTranslation(latern2Position);
                     effect.View = Matrix.CreateLookAt(camPosition, camTarget,
                         new Vector3(0f, 1f, 0f));// Y up
                     effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
