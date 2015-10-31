@@ -20,7 +20,8 @@ namespace GK3D
         Matrix worldMatrix;
 
         //BasicEffect for rendering
-        BasicEffect basicEffect;
+        //BasicEffect basicEffect;
+        Effect basicEffect;
 
         //Geometric info
         VertexPositionColorNormal[] triangleVertices;
@@ -71,7 +72,9 @@ namespace GK3D
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.Forward, Vector3.Up);
 
             //BasicEffect
-            basicEffect = new BasicEffect(GraphicsDevice);
+            //basicEffect = new BasicEffect(GraphicsDevice);
+            //basicEffect = Content.Load<Effect>("shaderPointLight");
+            basicEffect = Content.Load<Effect>("fxs");
             basicEffect.Alpha = 1f;
 
             basicEffect.VertexColorEnabled = true;
@@ -140,8 +143,10 @@ namespace GK3D
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+
             myBenchModel = Content.Load<Model>("bench");
             myLaternModel = Content.Load<Model>("latern1");
+
             aspectRatio = graphics.GraphicsDevice.Viewport.AspectRatio;
             // TODO: use this.Content to load your game content here
         }

@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\fxs.fx" />
+    <Content Include="Content\shaderPointLight.fx" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>

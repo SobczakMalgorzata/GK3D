@@ -70,3 +70,15 @@
 /processorParam:TextureFormat=DxtCompressed
 /build:latern1.fbx
 
+#begin shaderPointLight.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:shaderPointLight.fx
+
+#begin fxs.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:fxs.fx
+
