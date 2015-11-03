@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace GK3D
 {
@@ -75,20 +76,20 @@ namespace GK3D
             //basicEffect = new BasicEffect(GraphicsDevice);
             //basicEffect = Content.Load<Effect>("shaderPointLight");
             basicEffect = Content.Load<Effect>("fxs");
-            basicEffect.Alpha = 1f;
+            //basicEffect.Alpha = 1f;
 
-            basicEffect.VertexColorEnabled = true;
+            //basicEffect.VertexColorEnabled = true;
 
-            basicEffect.LightingEnabled = true;
+            //basicEffect.LightingEnabled = true;
             //basicEffect.EnableDefaultLighting();
 
-            basicEffect.AmbientLightColor = new Vector3(0.1f,0.1f,0f);
-            basicEffect.DiffuseColor = new Vector3(0.5f,0.5f,0.5f);
+            basicEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f,0.1f,0f));
+            basicEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f,0.5f,0.5f));
 
-            basicEffect.DirectionalLight0.Enabled = true;
-            basicEffect.DirectionalLight0.DiffuseColor = new Vector3(0.5f, 1f, 0.5f); // a red light
-            basicEffect.DirectionalLight0.Direction = new Vector3(0, -1, 0);  // coming along the _axis
-            basicEffect.DirectionalLight0.SpecularColor = new Vector3(1, 0, 0); // with green highlights
+            //basicEffect.DirectionalLight0.Enabled = true;
+            //basicEffect.DirectionalLight0.DiffuseColor = new Vector3(0.5f, 1f, 0.5f); // a red light
+            //basicEffect.DirectionalLight0.Direction = new Vector3(0, -1, 0);  // coming along the _axis
+            //basicEffect.DirectionalLight0.SpecularColor = new Vector3(1, 0, 0); // with green highlights
             
             //Geometry  - a simple triangle about the origin
             triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
@@ -112,17 +113,31 @@ namespace GK3D
             }
 
 
-                    for (int i = 0; i < width; i++)
+            for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < lenght; j++)
                 {
-                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, new Vector3(0,1,0));
-                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Blue, new Vector3(0, 1, 0));
-                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Red, new Vector3(0, 1, 0));
-                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, new Vector3(0, 1, 0));
-                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, new Vector3(0, 1, 0));
-                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, new Vector3(0, 1, 0));
+                    Vector3 w, v;
+                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j];
+                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j];
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, w * v);
+                    w = landscapeCoordinates[i, j] - landscapeCoordinates[i, j + 1];
+                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j + 1];
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Blue, w * v);
+                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j];
+                    v = landscapeCoordinates[i, j] - landscapeCoordinates[i + 1, j];
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Red, w * v);
+                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1];
+                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1];
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, w * v);
+                    w = landscapeCoordinates[i + 1, j + 1] - landscapeCoordinates[i, j + 1];
+                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j + 1];
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, w * v);
+                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j];
+                    v = landscapeCoordinates[i + 1, j + 1] - landscapeCoordinates[i + 1, j];
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, w * v);
                 }
+            
             }
 
             
@@ -167,6 +182,8 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            Vector3 camTempTarget = camTarget;
+            Vector3 camRotation = Vector3.Up;
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back ==
                 ButtonState.Pressed || Keyboard.GetState().IsKeyDown(
                 Keys.Escape))
@@ -200,13 +217,32 @@ namespace GK3D
             {
                 camPosition.Z -= 1f;
             }
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget, camRotation);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                
+                //camPosition.Y += 1f;
+                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
+                //modelView = Matrix.CreateRotationY((float)dry) * modelView;
+                camRotation = Vector3.Transform(camRotation, Matrix.CreateRotationY((float)dry));
+                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationY((float)dry));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
+                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationY((float)-dry));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
+                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationX((float)dry));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
+                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationX((float)-dry));
             }
 
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up);
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTempTarget, camRotation);
 
             // TODO: Add your update logic here
 
@@ -219,9 +255,9 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            basicEffect.Projection = projectionMatrix;
-            basicEffect.View = viewMatrix;
-            basicEffect.World = worldMatrix;
+            basicEffect.Parameters["xProjection"].SetValue(projectionMatrix);
+            basicEffect.Parameters["xView"].SetValue(viewMatrix);
+            basicEffect.Parameters["xWorld"].SetValue(worldMatrix);
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
             GraphicsDevice.SetVertexBuffer(vertexBuffer);
