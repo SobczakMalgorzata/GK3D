@@ -12,7 +12,7 @@ namespace GK3D
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-
+        bool basic;
         //Camera
         public CameraController Camera;
         Vector3 camTarget;
@@ -23,7 +23,8 @@ namespace GK3D
 
         //BasicEffect for rendering
         //BasicEffect basicEffect;
-        Effect basicEffect;
+        BasicEffect basicEffect;
+        Effect myEffect;
 
         //Geometric info
         VertexPositionColorNormal[] triangleVertices;
@@ -65,7 +66,7 @@ namespace GK3D
             // TODO: Add your initialization logic here
 
             base.Initialize();
-
+            basic = true;
             camTarget = new Vector3(0f, 0f, 0f);
             camPosition = new Vector3(0f, 0f, -100f);
             Camera = new CameraController(camPosition);
@@ -75,26 +76,34 @@ namespace GK3D
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                 new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.Forward, Vector3.Up);
+            if (basic)
+            {
+                //BasicEffect
+                basicEffect = new BasicEffect(GraphicsDevice);
+                basicEffect.Alpha = 1f;
 
-            //BasicEffect
-            //basicEffect = new BasicEffect(GraphicsDevice);
-            //basicEffect = Content.Load<Effect>("shaderPointLight");
-            basicEffect = Content.Load<Effect>("fxs");
-            //basicEffect.Alpha = 1f;
+                basicEffect.VertexColorEnabled = true;
 
-            //basicEffect.VertexColorEnabled = true;
+                basicEffect.LightingEnabled = true;
+                basicEffect.EnableDefaultLighting();
 
-            //basicEffect.LightingEnabled = true;
-            //basicEffect.EnableDefaultLighting();
+                basicEffect.AmbientLightColor = new Vector3(0.1f, 0.1f, 0f);
+                basicEffect.DiffuseColor = new Vector3(0.5f, 0.5f, 0.5f);
 
-            basicEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f,0.1f,0f));
-            basicEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f,0.5f,0.5f));
+                basicEffect.DirectionalLight0.Enabled = true;
+                basicEffect.DirectionalLight0.DiffuseColor = new Vector3(1f, 1f, 1f); // a red light
+                basicEffect.DirectionalLight0.Direction = new Vector3(0, 1, 0);  // coming along the _axis
+                basicEffect.DirectionalLight0.SpecularColor = new Vector3(0, 0, 0); // with green highlights
+            }
+            else
+            {
+                //myEffect = Content.Load<Effect>("shaderPointLight");
+                myEffect = Content.Load<Effect>("fxs");
+                myEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f, 0.1f, 0f));
+                myEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f, 0.5f, 0.5f));
+            }
 
-            //basicEffect.DirectionalLight0.Enabled = true;
-            //basicEffect.DirectionalLight0.DiffuseColor = new Vector3(0.5f, 1f, 0.5f); // a red light
-            //basicEffect.DirectionalLight0.Direction = new Vector3(0, -1, 0);  // coming along the _axis
-            //basicEffect.DirectionalLight0.SpecularColor = new Vector3(1, 0, 0); // with green highlights
-            
+
             //Geometry  - a simple triangle about the origin
             triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
             Vector3[,] landscapeCoordinates = new Vector3[width + 1, lenght + 1];
@@ -121,25 +130,21 @@ namespace GK3D
             {
                 for (int j = 0; j < lenght; j++)
                 {
-                    Vector3 w, v;
-                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j];
-                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j];
-                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, w * v);
-                    w = landscapeCoordinates[i, j] - landscapeCoordinates[i, j + 1];
-                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j + 1];
-                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Blue, w * v);
-                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j];
-                    v = landscapeCoordinates[i, j] - landscapeCoordinates[i + 1, j];
-                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Red, w * v);
-                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1];
-                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1];
-                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, w * v);
-                    w = landscapeCoordinates[i + 1, j + 1] - landscapeCoordinates[i, j + 1];
-                    v = landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j + 1];
-                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, w * v);
-                    w = landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j];
-                    v = landscapeCoordinates[i + 1, j + 1] - landscapeCoordinates[i + 1, j];
-                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, w * v);
+                    Vector3 w, v, normal;
+                    w = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j])/10;
+                    v = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j])/10;
+                    normal = Vector3.Cross(w, v);
+                    normal.Normalize();
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
+                    w = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1])/10;
+                    v = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1])/10;
+                    normal = Vector3.Cross(w, v);
+                    normal.Normalize();
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
                 }
             
             }
@@ -200,9 +205,18 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            basicEffect.Parameters["xProjection"].SetValue(projectionMatrix);
-            basicEffect.Parameters["xView"].SetValue(viewMatrix);
-            basicEffect.Parameters["xWorld"].SetValue(worldMatrix);
+            if (basic)
+            {
+                basicEffect.Projection = projectionMatrix;
+                basicEffect.View = Camera.ViewMatrix;
+                basicEffect.World = worldMatrix;
+            }
+            else
+            {
+                myEffect.Parameters["xProjection"].SetValue(projectionMatrix);
+                myEffect.Parameters["xView"].SetValue(viewMatrix);
+                myEffect.Parameters["xWorld"].SetValue(worldMatrix);
+            }
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
             GraphicsDevice.SetVertexBuffer(vertexBuffer);
@@ -211,83 +225,70 @@ namespace GK3D
             RasterizerState rasterizerState = new RasterizerState();
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState;
-
-            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            if (basic)
             {
-                pass.Apply();
-                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
+                foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
+                }
             }
+            else
+            {
+                foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
+                }
+            }
+            
             // TODO: Add your drawing code here
 
             Matrix[] transforms = new Matrix[myBenchModel.Bones.Count];
             myBenchModel.CopyAbsoluteBoneTransformsTo(transforms);
 
-
             // Draw the model. A model can have multiple meshes, so loop.
-            foreach (ModelMesh mesh in myBenchModel.Meshes)
-            {
-                // This is where the mesh orientation is set, as well 
-                // as our camera and projection.
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    effect.EnableDefaultLighting();
-                    effect.World = transforms[mesh.ParentBone.Index] *
-                        Matrix.CreateScale(benchScaleRatio, benchScaleRatio, benchScaleRatio)
-                        * Matrix.CreateRotationY(bench1Rotation)
-                        * Matrix.CreateTranslation(bench1Position);
-                    effect.View = Camera.ViewMatrix;// Y up
-                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
-                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
-                                        
-                }
-                // Draw the mesh, using the effects set above.
-                mesh.Draw();
-            }
+            drawModel(transforms, myBenchModel, benchScaleRatio, 0, bench1Rotation, 0, bench1Position);
 
             transforms = new Matrix[myLaternModel.Bones.Count];
             myLaternModel.CopyAbsoluteBoneTransformsTo(transforms);
 
-
             // Draw the model. A model can have multiple meshes, so loop.
-            foreach (ModelMesh mesh in myLaternModel.Meshes)
-            {
-                // This is where the mesh orientation is set, as well 
-                // as our camera and projection.
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    effect.EnableDefaultLighting();
-                    effect.World = transforms[mesh.ParentBone.Index] *
-                        Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
-                        * Matrix.CreateRotationY(latern1Rotation)
-                        * Matrix.CreateTranslation(latern1Position);
-                    effect.View = Camera.ViewMatrix;// Y up
-                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
-                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
-                }
-                // Draw the mesh, using the effects set above.
-                mesh.Draw();
-            }
-
-            foreach (ModelMesh mesh in myLaternModel.Meshes)
-            {
-                // This is where the mesh orientation is set, as well 
-                // as our camera and projection.
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    effect.EnableDefaultLighting();
-                    effect.World = transforms[mesh.ParentBone.Index] *
-                        Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
-                        * Matrix.CreateRotationY(latern2Rotation)
-                        * Matrix.CreateTranslation(latern2Position);
-                    effect.View = Camera.ViewMatrix;// Y up
-                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
-                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
-                }
-                // Draw the mesh, using the effects set above.
-                mesh.Draw();
-            }
+            drawModel(transforms, myLaternModel, laternScaleRatio, 0, latern2Rotation, 0, latern2Position);
+            drawModel(transforms, myLaternModel, laternScaleRatio, 0, latern1Rotation, 0, latern1Position);
+            
 
             base.Draw(gameTime);
+        }
+        public void drawModel(Matrix[] transforms, Model model, float scaleRatio,float rotationX,float rotationY,float rotationZ,Vector3 position)
+        {
+            if (basic)
+            {
+                foreach (ModelMesh mesh in model.Meshes)
+                {
+                    // This is where the mesh orientation is set, as well 
+                    // as our camera and projection.
+                    foreach (BasicEffect effect in mesh.Effects)
+                    {
+                        effect.EnableDefaultLighting();
+                        effect.World = transforms[mesh.ParentBone.Index] *
+                            Matrix.CreateScale(scaleRatio, scaleRatio, scaleRatio)
+                            * Matrix.CreateRotationX(rotationX)
+                            * Matrix.CreateRotationY(rotationY)
+                            * Matrix.CreateRotationZ(rotationZ)
+                            * Matrix.CreateTranslation(position);
+                        effect.View = Camera.ViewMatrix;// Y up
+                        effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                            GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
+                    }
+                    // Draw the mesh, using the effects set above.
+                    mesh.Draw();
+                }
+            }
+            else
+            {
+                
+            }
         }
     }
 
