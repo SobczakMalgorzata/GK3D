@@ -14,6 +14,7 @@ namespace GK3D
         SpriteBatch spriteBatch;
 
         //Camera
+        public CameraController Camera;
         Vector3 camTarget;
         Vector3 camPosition;
         Matrix projectionMatrix;
@@ -64,8 +65,11 @@ namespace GK3D
             // TODO: Add your initialization logic here
 
             base.Initialize();
+
             camTarget = new Vector3(0f, 0f, 0f);
             camPosition = new Vector3(0f, 0f, -100f);
+            Camera = new CameraController(camPosition);
+            Camera.ProcessInput(0f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
                 GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
@@ -182,67 +186,8 @@ namespace GK3D
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            Vector3 camTempTarget = camTarget;
-            Vector3 camRotation = Vector3.Up;
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back ==
-                ButtonState.Pressed || Keyboard.GetState().IsKeyDown(
-                Keys.Escape))
-                Exit();
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Right))
-            {
-                camPosition.X -= 1f;
-                camTarget.X -= 1f;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Left))
-            {
-                camPosition.X += 1f;
-                camTarget.X += 1f;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))
-            {
-                camPosition.Y -= 1f;
-                camTarget.Y -= 1f;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))
-            {
-                camPosition.Y += 1f;
-                camTarget.Y += 1f;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
-            {
-                camPosition.Z += 1f;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
-            {
-                camPosition.Z -= 1f;
-            }
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget, camRotation);
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-            {
-                //camPosition.Y += 1f;
-                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
-                //modelView = Matrix.CreateRotationY((float)dry) * modelView;
-                camRotation = Vector3.Transform(camRotation, Matrix.CreateRotationY((float)dry));
-                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationY((float)dry));
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-            {
-                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
-                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationY((float)-dry));
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
-                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationX((float)dry));
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                double dry = -(Math.PI / 30 * gameTime.ElapsedGameTime.TotalSeconds);
-                camTempTarget = camPosition + Vector3.Transform(camTarget, Matrix.CreateRotationX((float)-dry));
-            }
-
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTempTarget, camRotation);
+            float timeDifference = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+            Camera.ProcessInput(timeDifference);
 
             // TODO: Add your update logic here
 
@@ -290,8 +235,7 @@ namespace GK3D
                         Matrix.CreateScale(benchScaleRatio, benchScaleRatio, benchScaleRatio)
                         * Matrix.CreateRotationY(bench1Rotation)
                         * Matrix.CreateTranslation(bench1Position);
-                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
-                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.View = Camera.ViewMatrix;// Y up
                     effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
                         GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
                                         
@@ -316,8 +260,7 @@ namespace GK3D
                         Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
                         * Matrix.CreateRotationY(latern1Rotation)
                         * Matrix.CreateTranslation(latern1Position);
-                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
-                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.View = Camera.ViewMatrix;// Y up
                     effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
                         GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
                 }
@@ -336,8 +279,7 @@ namespace GK3D
                         Matrix.CreateScale(laternScaleRatio, laternScaleRatio, laternScaleRatio)
                         * Matrix.CreateRotationY(latern2Rotation)
                         * Matrix.CreateTranslation(latern2Position);
-                    effect.View = Matrix.CreateLookAt(camPosition, camTarget,
-                        new Vector3(0f, 1f, 0f));// Y up
+                    effect.View = Camera.ViewMatrix;// Y up
                     effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
                         GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
                 }
@@ -348,6 +290,9 @@ namespace GK3D
             base.Draw(gameTime);
         }
     }
+
+
+
     public struct VertexPositionColorNormal : IVertexType
     {
         public Vector3 Position;
