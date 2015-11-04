@@ -34,28 +34,28 @@ namespace GK3D
             Vector3 moveVector = new Vector3(0, 0, 0);
             KeyboardState keyState = Keyboard.GetState();
 
-            if (keyState.IsKeyDown(Keys.Up))
+            if (keyState.IsKeyDown(Keys.W))
                 updownRot += rotationSpeed * 10* amount;
-            if (keyState.IsKeyDown(Keys.Down))
+            if (keyState.IsKeyDown(Keys.S))
                 updownRot -= rotationSpeed * 10 * amount;
-            if (keyState.IsKeyDown(Keys.Right))
+            if (keyState.IsKeyDown(Keys.D))
                 leftrightRot -= rotationSpeed * 10 * amount;
-            if (keyState.IsKeyDown(Keys.Left))
+            if (keyState.IsKeyDown(Keys.A))
                 leftrightRot += rotationSpeed * 10 * amount;
 
             UpdateViewMatrix();
 
-            if (keyState.IsKeyDown(Keys.W))
+            if (keyState.IsKeyDown(Keys.Up))
                 moveVector += new Vector3(0, 0, -1);
-            if (keyState.IsKeyDown(Keys.S))
+            if (keyState.IsKeyDown(Keys.Down))
                 moveVector += new Vector3(0, 0, 1);
-            if (keyState.IsKeyDown(Keys.D))
+            if (keyState.IsKeyDown(Keys.Right))
                 moveVector += new Vector3(1, 0, 0);
-            if (keyState.IsKeyDown(Keys.A))
+            if (keyState.IsKeyDown(Keys.Left))
                 moveVector += new Vector3(-1, 0, 0);
-            if (keyState.IsKeyDown(Keys.Q))
+            if (keyState.IsKeyDown(Keys.PageUp))
                 moveVector += new Vector3(0, 1, 0);
-            if (keyState.IsKeyDown(Keys.E))
+            if (keyState.IsKeyDown(Keys.PageDown))
                 moveVector += new Vector3(0, -1, 0);
             AddToCameraPosition(moveVector * amount);
         }
