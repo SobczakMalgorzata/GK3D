@@ -41,13 +41,13 @@ namespace GK3D
         float aspectRatio;
         Vector3 bench1Position = new Vector3(10, 0, 30);
         Vector3 latern1Position = new Vector3(10, 0, 70);
-        Vector3 latern2Position = new Vector3(10, 0, 90);
-        float bench1Rotation = 0.0f;
-        float latern1Rotation = 0.0f;
-        float latern2Rotation = 0.0f;
-        float bench2Rotation = 90.0f;
-        float benchScaleRatio = 0.05f;
-        float laternScaleRatio = 0.07f;
+        Vector3 latern2Position = new Vector3(150, 0, 0);
+        float bench1Rotation = (float)(Math.PI / 180) * -90.0f;
+        float latern1Rotation = (float)(Math.PI / 180) * -90.0f;
+        float latern2Rotation = (float)(Math.PI / 180) * -90.0f;
+        float bench2Rotation = (float)(Math.PI / 180) * 90.0f;
+        float benchScaleRatio = 10f;
+        float laternScaleRatio = 10f;
 
         public Game1()
         {
@@ -66,7 +66,7 @@ namespace GK3D
             // TODO: Add your initialization logic here
 
             base.Initialize();
-            basic = true;
+            basic = false;
             camTarget = new Vector3(0f, 0f, 0f);
             camPosition = new Vector3(0f, 0f, -100f);
             Camera = new CameraController(camPosition);
@@ -76,6 +76,7 @@ namespace GK3D
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                 new Vector3(0f, 1f, 0f));// Y up
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.Forward, Vector3.Up);
+
             if (basic)
             {
                 //BasicEffect
@@ -97,12 +98,15 @@ namespace GK3D
             }
             else
             {
-                //myEffect = Content.Load<Effect>("shaderPointLight");
-                myEffect = Content.Load<Effect>("fxs");
-                myEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f, 0.1f, 0f));
-                myEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f, 0.5f, 0.5f));
-            }
 
+                //myEffect = Content.Load<Effect>("fxs");
+                myEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f, 0.1f, 0.1f));
+                myEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f, 0.5f, 0.5f));
+                myEffect.Parameters["xProjection"].SetValue(projectionMatrix);
+                myEffect.Parameters["xView"].SetValue(Camera.ViewMatrix);
+                myEffect.Parameters["xWorld"].SetValue(worldMatrix);
+                ShaderSetUp(myEffect);
+            }
 
             //Geometry  - a simple triangle about the origin
             triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
@@ -121,7 +125,7 @@ namespace GK3D
                     else if (i == 8)
                         landscapeCoordinates[i, j] = new Vector3(i * 10, 20, j * 10);
                     else
-                        landscapeCoordinates[i,j] = new Vector3(i * 10, 0, j * 10);
+                        landscapeCoordinates[i, j] = new Vector3(i * 10, 0, j * 10);
                 }
             }
 
@@ -131,25 +135,25 @@ namespace GK3D
                 for (int j = 0; j < lenght; j++)
                 {
                     Vector3 w, v, normal;
-                    w = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j])/10;
-                    v = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j])/10;
+                    w = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i, j]) / 10;
+                    v = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j]) / 10;
                     normal = Vector3.Cross(w, v);
                     normal.Normalize();
                     triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, normal);
                     triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
                     triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
-                    w = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1])/10;
-                    v = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1])/10;
+                    w = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1]) / 10;
+                    v = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1]) / 10;
                     normal = Vector3.Cross(w, v);
                     normal.Normalize();
                     triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, normal);
                     triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
                     triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
                 }
-            
+
             }
 
-            
+
 
             //Vert buffer
             vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(
@@ -165,12 +169,25 @@ namespace GK3D
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            //spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            
 
             myBenchModel = Content.Load<Model>("bench");
             myLaternModel = Content.Load<Model>("latern1");
-
+            if (basic)
+            {
+            }
+            else
+            {
+                myEffect = Content.Load<Effect>("shaderPointLight");
+                foreach (ModelMesh mesh in myBenchModel.Meshes)
+                    foreach (ModelMeshPart meshPart in mesh.MeshParts)
+                        meshPart.Effect = myEffect.Clone();
+                foreach (ModelMesh mesh in myLaternModel.Meshes)
+                    foreach (ModelMeshPart meshPart in mesh.MeshParts)
+                        meshPart.Effect = myEffect.Clone();
+            }
             aspectRatio = graphics.GraphicsDevice.Viewport.AspectRatio;
             // TODO: use this.Content to load your game content here
         }
@@ -213,8 +230,10 @@ namespace GK3D
             }
             else
             {
+                myEffect.Parameters["xCameraPosition"].SetValue(new Vector4(Camera.cameraPosition, 1));
+
                 myEffect.Parameters["xProjection"].SetValue(projectionMatrix);
-                myEffect.Parameters["xView"].SetValue(viewMatrix);
+                myEffect.Parameters["xView"].SetValue(Camera.ViewMatrix);
                 myEffect.Parameters["xWorld"].SetValue(worldMatrix);
             }
 
@@ -232,65 +251,103 @@ namespace GK3D
                     pass.Apply();
                     GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
                 }
+
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myBenchModel, benchScaleRatio, 0, bench1Rotation, 0, bench1Position);
+
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myLaternModel, laternScaleRatio, 0, latern2Rotation, 0, latern2Position);
+                drawModel(myLaternModel, laternScaleRatio, 0, latern1Rotation, 0, latern1Position);
             }
             else
             {
-                foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+                foreach (EffectPass pass in myEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
                 }
+
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myBenchModel, benchScaleRatio, 0, bench1Rotation, 0, bench1Position, "PointLight");
+
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myLaternModel, laternScaleRatio, 0, latern2Rotation, 0, latern2Position, "PointLight");
+                drawModel(myLaternModel, laternScaleRatio, 0, latern1Rotation, 0, latern1Position, "PointLight");
             }
-            
+
             // TODO: Add your drawing code here
 
-            Matrix[] transforms = new Matrix[myBenchModel.Bones.Count];
-            myBenchModel.CopyAbsoluteBoneTransformsTo(transforms);
 
-            // Draw the model. A model can have multiple meshes, so loop.
-            drawModel(transforms, myBenchModel, benchScaleRatio, 0, bench1Rotation, 0, bench1Position);
-
-            transforms = new Matrix[myLaternModel.Bones.Count];
-            myLaternModel.CopyAbsoluteBoneTransformsTo(transforms);
-
-            // Draw the model. A model can have multiple meshes, so loop.
-            drawModel(transforms, myLaternModel, laternScaleRatio, 0, latern2Rotation, 0, latern2Position);
-            drawModel(transforms, myLaternModel, laternScaleRatio, 0, latern1Rotation, 0, latern1Position);
-            
 
             base.Draw(gameTime);
         }
-        public void drawModel(Matrix[] transforms, Model model, float scaleRatio,float rotationX,float rotationY,float rotationZ,Vector3 position)
+
+        public void ShaderSetUp(Effect effect)
         {
-            if (basic)
+            effect.CurrentTechnique = effect.Techniques["PointLight"];
+            effect.Parameters["xCameraPosition"].SetValue(new Vector4(Camera.cameraPosition, 1));
+            effect.Parameters["AmbientColor"].SetValue(new Vector4(0.2f, 0.2f, 0.2f, 1f));
+            effect.Parameters["Light1Position"].SetValue(new Vector4(150, 0, 0, 1));
+            effect.Parameters["Light1Range"].SetValue(100.0f);
+            effect.Parameters["Light1DiffuseColor"].SetValue(new Vector3(1f));
+            effect.Parameters["Light1SpecularColor"].SetValue(new Vector4(1, 1, 1, 200));
+            effect.Parameters["Light2Position"].SetValue(new Vector4(10, 0, 70, 1));
+            effect.Parameters["Light2Range"].SetValue(100.0f);
+            effect.Parameters["Light2DiffuseColor"].SetValue(new Vector3(1f));
+            effect.Parameters["Light2SpecularColor"].SetValue(new Vector4(1, 1, 1, 200));
+        }
+
+        public void drawModel(Model model, float scaleRatio,float rotationX,float rotationY,float rotationZ,Vector3 position)
+        {
+            foreach (ModelMesh mesh in model.Meshes)
             {
-                foreach (ModelMesh mesh in model.Meshes)
+                // This is where the mesh orientation is set, as well 
+                // as our camera and projection.
+                foreach (BasicEffect effect in mesh.Effects)
                 {
-                    // This is where the mesh orientation is set, as well 
-                    // as our camera and projection.
-                    foreach (BasicEffect effect in mesh.Effects)
-                    {
-                        effect.EnableDefaultLighting();
-                        effect.World = transforms[mesh.ParentBone.Index] *
-                            Matrix.CreateScale(scaleRatio, scaleRatio, scaleRatio)
-                            * Matrix.CreateRotationX(rotationX)
-                            * Matrix.CreateRotationY(rotationY)
-                            * Matrix.CreateRotationZ(rotationZ)
-                            * Matrix.CreateTranslation(position);
-                        effect.View = Camera.ViewMatrix;// Y up
-                        effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
-                            GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
-                    }
-                    // Draw the mesh, using the effects set above.
-                    mesh.Draw();
+                    effect.EnableDefaultLighting();
+                    effect.World = Matrix.CreateScale(scaleRatio, scaleRatio, scaleRatio)
+                        * Matrix.CreateRotationX(rotationX)
+                        * Matrix.CreateRotationY(rotationY)
+                        * Matrix.CreateRotationZ(rotationZ)
+                        * Matrix.CreateTranslation(position);
+                    effect.View = Camera.ViewMatrix;// Y up
+                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f),
+                        GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
                 }
+                // Draw the mesh, using the effects set above.
+            mesh.Draw();
             }
-            else
+        }
+        private void drawModel(Model model, float scaleRatio, float rotationX, float rotationY, float rotationZ, Vector3 position, string technique)
+        {
+            foreach (ModelMesh mesh in model.Meshes)
             {
-                
+                // This is where the mesh orientation is set, as well 
+                // as our camera and projection.
+                foreach (Effect effect in mesh.Effects)
+                {
+                    Matrix worldTemp = new Matrix();
+                    worldTemp = Matrix.CreateScale(scaleRatio, scaleRatio, scaleRatio)
+                        * Matrix.CreateRotationX(rotationX)
+                        * Matrix.CreateRotationY(rotationY)
+                        * Matrix.CreateRotationZ(rotationZ)
+                        * Matrix.CreateTranslation(position);
+                    ShaderSetUp(effect);
+                    effect.CurrentTechnique = effect.Techniques[technique];
+                    //effect.Parameters["xWorld"].SetValue(worldTemp);
+                    effect.Parameters["xWorld"].SetValue(Matrix.CreateScale(scaleRatio, scaleRatio, scaleRatio)
+                        * Matrix.CreateRotationX(rotationY) * Matrix.CreateTranslation(position));
+                    effect.Parameters["xView"].SetValue(Camera.ViewMatrix);// Y up
+                    effect.Parameters["xProjection"].SetValue(projectionMatrix);
+                }
+                // Draw the mesh, using the effects set above.
+                mesh.Draw();
             }
         }
     }
+
+    
 
 
 
