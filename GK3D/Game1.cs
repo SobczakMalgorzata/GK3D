@@ -126,16 +126,7 @@ namespace GK3D
             {
                 for (int j = 0; j < lenght + 1; j++)
                 {
-                    if (i < 7 && i > 4 && j < 20 && j > 10)
-                        landscapeCoordinates[i, j] = new Vector3(i * 10, 10, j * 10);
-                    else if (j < 7 && j > 4 && i < 20 && i > 10)
-                        landscapeCoordinates[i, j] = new Vector3(i * 10, -5, j * 10);
-                    else if (i == 7 || i == 9)
-                        landscapeCoordinates[i, j] = new Vector3(i * 10, 10, j * 10);
-                    else if (i == 8)
-                        landscapeCoordinates[i, j] = new Vector3(i * 10, 20, j * 10);
-                    else
-                        landscapeCoordinates[i, j] = new Vector3(i * 10, 0, j * 10);
+                    landscapeCoordinates[i, j] = new Vector3(i * 10, perlin(i,j), j * 10);
                 }
             }
 
@@ -152,9 +143,9 @@ namespace GK3D
                     //triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, normal);
                     //triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
                     //triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionNormalTexture(landscapeCoordinates[i, j], normal, new Vector2(0,0));//(float)(i*textureStep), (float)(j * textureStep)));
-                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0,1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
-                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1,0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionNormalTexture(landscapeCoordinates[i, j], normal, new Vector2(0, 0));//(float)(i*textureStep), (float)(j * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0, 1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1, 0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
                     w = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1]) / 10;
                     v = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1]) / 10;
                     normal = Vector3.Cross(w, v);
@@ -162,9 +153,9 @@ namespace GK3D
                     //triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, normal);
                     //triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
                     //triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j + 1], normal, new Vector2(1,1));// (float)((i + 1) * textureStep), (float)((j + 1) * textureStep)));
-                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0,1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
-                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1,0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j + 1], normal, new Vector2(1, 1));// (float)((i + 1) * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0, 1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1, 0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
                 }
 
             }
@@ -187,7 +178,7 @@ namespace GK3D
             // Create a new SpriteBatch, which can be used to draw textures.
             //spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            
+
             //Models
             myBenchModel = Content.Load<Model>("bench");
             myLaternModel = Content.Load<Model>("latern1");
@@ -295,14 +286,14 @@ namespace GK3D
                     myEffect.Parameters["xTexture"].SetValue(grassTexture);
                     GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
                 }
-                GraphicsDevice.Clear(Color.Black);
+                //GraphicsDevice.Clear(Color.Black);
                 // Draw the model. A model can have multiple meshes, so loop.
-                drawModel(myBenchModel, benchTexture, benchScaleRatio, 0, bench1Rotation, 0, bench1Position, "PointLight");
-                GraphicsDevice.Clear(Color.Black);
+                //drawModel(myBenchModel, benchTexture, benchScaleRatio, 0, bench1Rotation, 0, bench1Position, "PointLight");
+                //GraphicsDevice.Clear(Color.Black);
                 // Draw the model. A model can have multiple meshes, so loop.
-                drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern2Rotation, 0, latern2Position, "PointLight");
-                GraphicsDevice.Clear(Color.Black);
-                drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern1Rotation, 0, latern1Position, "PointLight");
+                //drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern2Rotation, 0, latern2Position, "PointLight");
+                //GraphicsDevice.Clear(Color.Black);
+                //drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern1Rotation, 0, latern1Position, "PointLight");
 
                 // Draw the model. A model can have multiple meshes, so loop.
                 //drawModel(myTreeModel, treeScaleRatio, 0, treeRotation, 0, treePosition, "PointLight");
@@ -331,7 +322,7 @@ namespace GK3D
             effect.Parameters["Light2SpecularColor"].SetValue(new Vector4(1, 1, 1, 200));
         }
 
-        public void drawModel(Model model, float scaleRatio,float rotationX,float rotationY,float rotationZ,Vector3 position)
+        public void drawModel(Model model, float scaleRatio, float rotationX, float rotationY, float rotationZ, Vector3 position)
         {
             foreach (ModelMesh mesh in model.Meshes)
             {
@@ -350,7 +341,7 @@ namespace GK3D
                         GraphicsDevice.DisplayMode.AspectRatio, 1f, 1000f);
                 }
                 // Draw the mesh, using the effects set above.
-            mesh.Draw();
+                mesh.Draw();
             }
         }
         private void drawModel(Model model, Texture2D tex, float scaleRatio, float rotationX, float rotationY, float rotationZ, Vector3 position, string technique)
@@ -380,35 +371,119 @@ namespace GK3D
                 mesh.Draw();
             }
         }
-    }
-
-    
-
-
-
-    public struct VertexPositionColorNormal : IVertexType
-    {
-        public Vector3 Position;
-        public Color Color;
-        public Vector3 Normal;
-
-        public readonly static VertexDeclaration VertexDeclaration
-            = new VertexDeclaration(
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
-                new VertexElement(sizeof(float) * 3, VertexElementFormat.Color, VertexElementUsage.Color, 0),
-                new VertexElement(sizeof(float) * 3 + 4, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0)
-                );
-
-        public VertexPositionColorNormal(Vector3 pos, Color c, Vector3 n)
+        // Function to linearly interpolate between a0 and a1
+        // Weight w should be in the range [0.0, 1.0]
+        public float lerp(float a0, float a1, float w)
         {
-            Position = pos;
-            Color = c;
-            Normal = n;
+            return (float)((1.0 - w) * a0 + w * a1);
         }
 
-        VertexDeclaration IVertexType.VertexDeclaration
+        public float[,,] Grad(int x, int y)
         {
-            get { return VertexDeclaration; }
+            float[,,] Gradient = new float[(int)y, (int)x, 2];
+
+            for (int i = 0; i < y; i++)
+            {
+                for (int j = 0; j < x; j++)
+                {
+                    if (i % 3 == 2)
+                    {
+                        Gradient[i, j, 0] = 1;
+                        Gradient[i, j, 1] = 1;
+                    }
+                    else if (j % 3 == 1)
+                    {
+                        Gradient[i, j, 0] = 1;
+                        Gradient[i, j, 1] = -1;
+                    }
+                    else if (i % 4 == 3)
+                    {
+                        Gradient[i, j, 0] = 1;
+                        Gradient[i, j, 1] = -1;
+                    }
+                    else if (j % 5 == 4)
+                    {
+                        Gradient[i, j, 0] = 1;
+                        Gradient[i, j, 1] = -1;
+                    }
+                    else
+                    {
+                        Gradient[i, j, 0] = -1;
+                        Gradient[i, j, 1] = -1;
+                    }
+                }
+            }
+            return Gradient;
+        }
+
+        // Computes the dot product of the distance and gradient vectors.
+        public float dotGridGradient(int ix, int iy, float x, float y)
+        {
+            // Precomputed (or otherwise) gradient vectors at each grid point X,Y
+            float[,,] Gradient = Grad((int)x, (int)y);
+
+            // Compute the distance vector
+            float dx = x - (float)ix;
+            float dy = y - (float)iy;
+
+            // Compute the dot-product
+            return (float)(dx * Gradient[iy, ix, 0] + dy * Gradient[iy, ix, 1]);
+        }
+
+        // Compute Perlin noise at coordinates x, y
+        public float perlin(float x, float y)
+        {
+
+            // Determine grid cell coordinates
+            int x0 = (x > 0.0 ? (int)x : (int)x - 1);
+            int x1 = x0 + 1;
+            int y0 = (y > 0.0 ? (int)y : (int)y - 1);
+            int y1 = y0 + 1;
+
+            // Determine interpolation weights
+            // Could also use higher order polynomial/s-curve here
+            float sx = x - (float)x0;
+            float sy = y - (float)y0;
+
+            // Interpolate between grid point gradients
+            float n0, n1, ix0, ix1, value;
+            n0 = dotGridGradient(x0, y0, x, y);
+            n1 = dotGridGradient(x1, y0, x, y);
+            ix0 = lerp(n0, n1, sx);
+            n0 = dotGridGradient(x0, y1, x, y);
+            n1 = dotGridGradient(x1, y1, x, y);
+            ix1 = lerp(n0, n1, sx);
+            value = lerp(ix0, ix1, sy);
+
+            return value;
+        }
+
+
+
+        public struct VertexPositionColorNormal : IVertexType
+        {
+            public Vector3 Position;
+            public Color Color;
+            public Vector3 Normal;
+
+            public readonly static VertexDeclaration VertexDeclaration
+                = new VertexDeclaration(
+                    new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                    new VertexElement(sizeof(float) * 3, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+                    new VertexElement(sizeof(float) * 3 + 4, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0)
+                    );
+
+            public VertexPositionColorNormal(Vector3 pos, Color c, Vector3 n)
+            {
+                Position = pos;
+                Color = c;
+                Normal = n;
+            }
+
+            VertexDeclaration IVertexType.VertexDeclaration
+            {
+                get { return VertexDeclaration; }
+            }
         }
     }
 }
