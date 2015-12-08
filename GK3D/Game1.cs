@@ -27,7 +27,7 @@ namespace GK3D
         Effect myEffect;
 
         //Geometric info
-        VertexPositionColorNormal[] triangleVertices;
+        VertexPositionNormalTexture[] triangleVertices;
         VertexBuffer vertexBuffer;
 
         //Landscape Coordinates
@@ -36,18 +36,28 @@ namespace GK3D
         // Set the 3D model to draw.
         Model myBenchModel;
         Model myLaternModel;
+        Model myTreeModel;
+
+        //Textures 2D
+        Texture2D treeTexture;
+        Texture2D grassTexture;
+        Texture2D benchTexture;
+        Texture2D laternTexture;
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
         Vector3 bench1Position = new Vector3(10, 0, 30);
         Vector3 latern1Position = new Vector3(10, 0, 70);
         Vector3 latern2Position = new Vector3(150, 0, 0);
+        Vector3 treePosition = new Vector3(100, 0, 70);
         float bench1Rotation = (float)(Math.PI / 180) * -90.0f;
         float latern1Rotation = (float)(Math.PI / 180) * -90.0f;
+        float treeRotation = (float)(Math.PI / 180) * -90.0f;
         float latern2Rotation = (float)(Math.PI / 180) * -90.0f;
         float bench2Rotation = (float)(Math.PI / 180) * 90.0f;
         float benchScaleRatio = 10f;
         float laternScaleRatio = 10f;
+        float treeScaleRatio = 10f;
 
         public Game1()
         {
@@ -99,7 +109,6 @@ namespace GK3D
             else
             {
 
-                //myEffect = Content.Load<Effect>("fxs");
                 myEffect.Parameters["AmbientColor"].SetValue(new Vector3(0.1f, 0.1f, 0.1f));
                 myEffect.Parameters["DiffuseColor"].SetValue(new Vector3(0.5f, 0.5f, 0.5f));
                 myEffect.Parameters["xProjection"].SetValue(projectionMatrix);
@@ -109,7 +118,8 @@ namespace GK3D
             }
 
             //Geometry  - a simple triangle about the origin
-            triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
+            //triangleVertices = new VertexPositionColorNormal[6 * width * lenght];
+            triangleVertices = new VertexPositionNormalTexture[6 * width * lenght];
             Vector3[,] landscapeCoordinates = new Vector3[width + 1, lenght + 1];
 
             for (int i = 0; i < width + 1; i++)
@@ -129,7 +139,7 @@ namespace GK3D
                 }
             }
 
-
+            double textureStep = 640 / 30;
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < lenght; j++)
@@ -139,16 +149,22 @@ namespace GK3D
                     v = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i, j]) / 10;
                     normal = Vector3.Cross(w, v);
                     normal.Normalize();
-                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionColorNormal(landscapeCoordinates[i, j], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 0] = new VertexPositionNormalTexture(landscapeCoordinates[i, j], normal, new Vector2(0,0));//(float)(i*textureStep), (float)(j * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 1] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0,1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 2] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1,0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
                     w = (landscapeCoordinates[i, j + 1] - landscapeCoordinates[i + 1, j + 1]) / 10;
                     v = (landscapeCoordinates[i + 1, j] - landscapeCoordinates[i + 1, j + 1]) / 10;
                     normal = Vector3.Cross(w, v);
                     normal.Normalize();
-                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
-                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j + 1], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionColorNormal(landscapeCoordinates[i, j + 1], Color.Green, normal);
+                    //triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionColorNormal(landscapeCoordinates[i + 1, j], Color.Green, normal);
+                    triangleVertices[6 * j + i * lenght * 6 + 3] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j + 1], normal, new Vector2(1,1));// (float)((i + 1) * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 4] = new VertexPositionNormalTexture(landscapeCoordinates[i, j + 1], normal, new Vector2(0,1));// (float)(i * textureStep), (float)((j + 1) * textureStep)));
+                    triangleVertices[6 * j + i * lenght * 6 + 5] = new VertexPositionNormalTexture(landscapeCoordinates[i + 1, j], normal, new Vector2(1,0));// (float)((i + 1) * textureStep), (float)(j * textureStep)));
                 }
 
             }
@@ -157,9 +173,9 @@ namespace GK3D
 
             //Vert buffer
             vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(
-                           VertexPositionColorNormal), 6 * width * lenght, BufferUsage.
+                           VertexPositionNormalTexture), 6 * width * lenght, BufferUsage.
                            WriteOnly);
-            vertexBuffer.SetData<VertexPositionColorNormal>(triangleVertices);
+            vertexBuffer.SetData<VertexPositionNormalTexture>(triangleVertices);
         }
 
         /// <summary>
@@ -172,9 +188,18 @@ namespace GK3D
             //spriteBatch = new SpriteBatch(GraphicsDevice);
 
             
-
+            //Models
             myBenchModel = Content.Load<Model>("bench");
             myLaternModel = Content.Load<Model>("latern1");
+            //myTreeModel = Content.Load<Model>("Alan Tree");
+
+            //Textures
+            //treeTexture = Content.Load<Texture2D>("");
+            grassTexture = Content.Load<Texture2D>("GrassTry");
+            benchTexture = Content.Load<Texture2D>("GrassTry");
+            laternTexture = Content.Load<Texture2D>("GrassTry");
+
+            //Effect loading
             if (basic)
             {
             }
@@ -187,6 +212,9 @@ namespace GK3D
                 foreach (ModelMesh mesh in myLaternModel.Meshes)
                     foreach (ModelMeshPart meshPart in mesh.MeshParts)
                         meshPart.Effect = myEffect.Clone();
+                /*foreach (ModelMesh mesh in myTreeModel.Meshes)
+                    foreach (ModelMeshPart meshPart in mesh.MeshParts)
+                        meshPart.Effect = myEffect.Clone();*/
             }
             aspectRatio = graphics.GraphicsDevice.Viewport.AspectRatio;
             // TODO: use this.Content to load your game content here
@@ -264,15 +292,21 @@ namespace GK3D
                 foreach (EffectPass pass in myEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
+                    myEffect.Parameters["xTexture"].SetValue(grassTexture);
                     GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, width * lenght * 2);
                 }
+                GraphicsDevice.Clear(Color.Black);
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myBenchModel, benchTexture, benchScaleRatio, 0, bench1Rotation, 0, bench1Position, "PointLight");
+                GraphicsDevice.Clear(Color.Black);
+                // Draw the model. A model can have multiple meshes, so loop.
+                drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern2Rotation, 0, latern2Position, "PointLight");
+                GraphicsDevice.Clear(Color.Black);
+                drawModel(myLaternModel, laternTexture, laternScaleRatio, 0, latern1Rotation, 0, latern1Position, "PointLight");
 
                 // Draw the model. A model can have multiple meshes, so loop.
-                drawModel(myBenchModel, benchScaleRatio, 0, bench1Rotation, 0, bench1Position, "PointLight");
+                //drawModel(myTreeModel, treeScaleRatio, 0, treeRotation, 0, treePosition, "PointLight");
 
-                // Draw the model. A model can have multiple meshes, so loop.
-                drawModel(myLaternModel, laternScaleRatio, 0, latern2Rotation, 0, latern2Position, "PointLight");
-                drawModel(myLaternModel, laternScaleRatio, 0, latern1Rotation, 0, latern1Position, "PointLight");
             }
 
             // TODO: Add your drawing code here
@@ -287,8 +321,8 @@ namespace GK3D
             effect.CurrentTechnique = effect.Techniques["PointLight"];
             effect.Parameters["xCameraPosition"].SetValue(new Vector4(Camera.cameraPosition, 1));
             effect.Parameters["AmbientColor"].SetValue(new Vector4(0.2f, 0.2f, 0.2f, 1f));
-            effect.Parameters["Light1Position"].SetValue(new Vector4(150, 0, 0, 1));
-            effect.Parameters["Light1Range"].SetValue(100.0f);
+            effect.Parameters["Light1Position"].SetValue(new Vector4(150, 200, 0, 1));
+            effect.Parameters["Light1Range"].SetValue(250.0f);
             effect.Parameters["Light1DiffuseColor"].SetValue(new Vector3(1f));
             effect.Parameters["Light1SpecularColor"].SetValue(new Vector4(1, 1, 1, 200));
             effect.Parameters["Light2Position"].SetValue(new Vector4(10, 0, 70, 1));
@@ -319,7 +353,7 @@ namespace GK3D
             mesh.Draw();
             }
         }
-        private void drawModel(Model model, float scaleRatio, float rotationX, float rotationY, float rotationZ, Vector3 position, string technique)
+        private void drawModel(Model model, Texture2D tex, float scaleRatio, float rotationX, float rotationY, float rotationZ, Vector3 position, string technique)
         {
             foreach (ModelMesh mesh in model.Meshes)
             {
@@ -340,6 +374,7 @@ namespace GK3D
                         * Matrix.CreateRotationX(rotationY) * Matrix.CreateTranslation(position));
                     effect.Parameters["xView"].SetValue(Camera.ViewMatrix);// Y up
                     effect.Parameters["xProjection"].SetValue(projectionMatrix);
+                    effect.Parameters["xTexture"].SetValue(tex);
                 }
                 // Draw the mesh, using the effects set above.
                 mesh.Draw();
